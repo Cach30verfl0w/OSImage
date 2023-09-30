@@ -1,0 +1,27 @@
+[package]
+name = "osimage"
+description = "OSImage is a tool that can be used to generate image files for Rust Operating Systems"
+authors = ["Cedric Hammes <cach30verfl0w@gmail.com>"]
+version = "1.0.0"
+repository = "https://github.com/Cach30verfl0w/osimage"
+license = "Apache-2.0 OR MIT"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.4.4", features = ["derive"] }
+simple_logger = { version = "4.2.0", features = ["colors", "threads"] }
+colorful = "0.2.2"
+log = "0.4.20"
+
+# Error Handling and File Reading
+thiserror = "1.0.48"
+cargo_toml = "0.16.2"
+serde = { version = "1.0.188", features = ["derive"] }
+toml = "0.8.0"
+
+# File Systems and Images
+fatfs = { version = "0.3.6", features = ["std"] }
+fscommon = "0.1.1"
+
+# Other
+glob = "0.3.1"
