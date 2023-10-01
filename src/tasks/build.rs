@@ -1,6 +1,5 @@
-use std::env;
 use std::fs::{create_dir, remove_dir, remove_file};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use colorful::{Color, Colorful};
 use log::{debug, info};
@@ -8,22 +7,7 @@ use crate::Arguments;
 use crate::error::Error;
 use crate::image::Image;
 use crate::project::CargoProject;
-
-// https://stackoverflow.com/questions/37498864/finding-executable-in-path-with-rust/37499032#37499032
-fn find_in_path<P>(name: P) -> Option<PathBuf> where P: AsRef<Path> {
-    env::var_os("PATH").and_then(|paths| {
-        env::split_paths(&paths)
-            .filter_map(|dir| {
-                let full_path = dir.join(&name);
-                if full_path.is_file() {
-                    Some(full_path)
-                } else {
-                    None
-                }
-            })
-            .next()
-    })
-}
+use crate::utils::find_in_path;
 
 pub(crate) fn build_image(args: &Arguments, projects: Vec<CargoProject>, image_file: &String,
                           iso_file: &String, block_size: &u16, block_count: &u32) -> Result<(), Error> {
@@ -88,7 +72,7 @@ pub(crate) fn build_image(args: &Arguments, projects: Vec<CargoProject>, image_f
 
     let exit_status = command.status()?;
     if !exit_status.success() {
-        return Err(Error::ISOGenFailed(exit_status.code().unwrap()));
+        return Err(Error::ProcessFailed(String::from("xorriso"), exit_status.code().unwrap()));
     }
 
     // Cleanup

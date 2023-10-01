@@ -7,17 +7,19 @@ use clap::{Parser, Subcommand, ValueEnum};
 use colorful::{Color, Colorful};
 use log::{error, info, Level};
 use crate::arch::Architecture;
-use crate::build::build_image;
-use crate::error::{EXIT_BUILD_ERROR, EXIT_INVALID_WORKSPACE};
+use crate::error::{EXIT_BUILD_ERROR, EXIT_INVALID_WORKSPACE, EXIT_QEMU_ERROR};
 use crate::project::{CargoProject, load_from_workspace};
+use crate::tasks::build::build_image;
+use crate::tasks::qemu::run_qemu;
 use crate::validate::find_manifest_and_validate;
 
 pub(crate) mod validate;
 pub(crate) mod error;
 pub(crate) mod project;
 pub(crate) mod arch;
-pub(crate) mod build;
+pub(crate) mod tasks;
 pub(crate) mod image;
+pub(crate) mod utils;
 
 #[derive(ValueEnum, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 enum ImageType {
@@ -147,10 +149,15 @@ fn main() {
                     exit(EXIT_BUILD_ERROR);
                 }
             }
-        }
-        _ => {
-            error!("Selected feature is not implemented currently");
-            exit(0);
+        },
+        SubCommand::RunQEMU { iso_file, debugging, debug_port } => {
+            match run_qemu(&args, iso_file, *debugging, *debug_port) {
+                Ok(()) => {}
+                Err(error) => {
+                    error!("Unable to run image in QEMU => {}", error);
+                    exit(EXIT_QEMU_ERROR);
+                }
+            }
         }
     }
 }

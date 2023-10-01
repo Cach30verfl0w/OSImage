@@ -22,12 +22,12 @@ use std::{
     path::Path,
 };
 
-pub(crate) struct Image {
+pub struct Image {
     file_system: FileSystem<BufStream<File>>,
 }
 
 impl Image {
-    pub(crate) fn new<F: AsRef<Path>>(
+    pub fn new<F: AsRef<Path>>(
         file: F, block_size: u16, block_count: u32,
     ) -> Result<Image, Error> {
         // Create zeroed file if exists
@@ -52,7 +52,7 @@ impl Image {
         Ok(Self { file_system })
     }
 
-    pub(crate) fn create_directory<DIR: AsRef<Path>>(&self, directory: DIR) -> Result<(), Error> {
+    pub fn create_directory<DIR: AsRef<Path>>(&self, directory: DIR) -> Result<(), Error> {
         let directory = directory.as_ref();
         if directory.to_str().unwrap().is_empty() {
             return Ok(());
@@ -67,7 +67,7 @@ impl Image {
         Ok(())
     }
 
-    pub(crate) fn copy_into<HP: AsRef<Path>, IP: AsRef<Path>>(
+    pub fn copy_into<HP: AsRef<Path>, IP: AsRef<Path>>(
         &self, host_file: HP, image_file: IP,
     ) -> Result<(), Error> {
         debug!(

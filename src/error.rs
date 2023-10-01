@@ -2,7 +2,8 @@ use glob::{GlobError, PatternError};
 use thiserror::Error;
 
 pub(crate) const EXIT_INVALID_WORKSPACE: i32 = -1;
-pub(crate) const EXIT_BUILD_ERROR: i32 = -1;
+pub(crate) const EXIT_BUILD_ERROR: i32 = -2;
+pub(crate) const EXIT_QEMU_ERROR: i32 = -3;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -22,6 +23,6 @@ pub enum Error {
     BuildFailed(String, i32),
     #[error("Illegal parameter '{0}'")]
     InvalidParameter(String),
-    #[error("xorriso failed with error code {0}")]
-    ISOGenFailed(i32),
+    #[error("{0} failed with error code {1}")]
+    ProcessFailed(String, i32),
 }
