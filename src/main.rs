@@ -88,7 +88,11 @@ enum SubCommand {
 
         /// If debugging is enabled, the port of the GDB server for qemu
         #[arg(long, default_value_t = 1337)]
-        debug_port: u16
+        debug_port: u16,
+
+        /// If this is enabled, QEMU will print register and exception information to stdout
+        #[arg(long, short, default_value_t = false)]
+        exception_info: bool
     }
 }
 
@@ -150,8 +154,8 @@ fn main() {
                 }
             }
         },
-        SubCommand::RunQEMU { iso_file, debugging, debug_port } => {
-            match run_qemu(&args, iso_file, *debugging, *debug_port) {
+        SubCommand::RunQEMU { iso_file, debugging, debug_port, exception_info } => {
+            match run_qemu(&args, iso_file, *debugging, *debug_port, *exception_info) {
                 Ok(()) => {}
                 Err(error) => {
                     error!("Unable to run image in QEMU => {}", error);

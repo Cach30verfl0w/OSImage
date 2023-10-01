@@ -5,7 +5,7 @@ use crate::Arguments;
 use crate::error::Error;
 use crate::utils::find_in_path;
 
-pub(crate) fn run_qemu(args: &Arguments, iso_file: &String, debugging: bool, debug_port: u16) -> Result<(), Error> {
+pub(crate) fn run_qemu(args: &Arguments, iso_file: &String, debugging: bool, debug_port: u16, exception_info: bool) -> Result<(), Error> {
     let qemu_path = find_in_path(format!("qemu-system-{}", String::from(args.target_arch)))
         .ok_or(Error::ExecutableNotFound(String::from("cargo")))?;
 
@@ -18,6 +18,12 @@ pub(crate) fn run_qemu(args: &Arguments, iso_file: &String, debugging: bool, deb
         debug!("QEMU Debugging enabled, set debug arguments");
         command.arg("-gdb").arg(format!("tcp::{}", debug_port));
         command.arg("-S");
+    }
+
+    if exception_info {
+        debug!("QEMU Exception Info enabled, set arguments");
+        command.arg("-d").arg("int,cpu_reset");
+        command.arg("-no-reboot");
     }
 
     let exit_status = command.status()?;
