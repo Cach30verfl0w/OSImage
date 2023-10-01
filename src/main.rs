@@ -5,7 +5,7 @@ use std::path;
 use std::process::exit;
 use clap::{Parser, Subcommand, ValueEnum};
 use colorful::{Color, Colorful};
-use log::{error, info};
+use log::{error, info, Level};
 use crate::arch::Architecture;
 use crate::build::build_image;
 use crate::error::{EXIT_BUILD_ERROR, EXIT_INVALID_WORKSPACE};
@@ -17,6 +17,7 @@ pub(crate) mod error;
 pub(crate) mod project;
 pub(crate) mod arch;
 pub(crate) mod build;
+pub(crate) mod image;
 
 #[derive(ValueEnum, Clone, Copy, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 enum ImageType {
@@ -45,6 +46,10 @@ pub(crate) struct Arguments {
     #[arg(long, short, default_value_t = Architecture::system())]
     target_arch: Architecture,
 
+    /// Set the log level
+    #[arg(long, short)]
+    level: Option<Level>,
+
     #[command(subcommand)]
     command: SubCommand
 }
@@ -59,7 +64,13 @@ enum SubCommand {
 
         /// The name of the ISO file that should be built by this tool
         #[arg(long, default_value = "image.iso")]
-        iso_file: String
+        iso_file: String,
+
+        #[arg(long, default_value_t = 512)]
+        block_size: u16,
+
+        #[arg(long, default_value_t = 93750)]
+        block_count: u32
     },
 
     /// Run the built image in QEMU
@@ -92,6 +103,7 @@ fn main() {
     info!("        {} Creation Tool by {}", "OS Image".gradient(Color::Red), "Cach30verfl0w"
         .gradient(Color::Green));
     let args = Arguments::parse();
+    log::set_max_level(args.level.unwrap_or(Level::Info).to_level_filter());
     info!("Targeting {} architecture ({})", args.target_arch, if args.target_arch.is64bit() { "64-bit" }
         else { "32-bit" });
 
@@ -127,8 +139,8 @@ fn main() {
 
     // Switch to selected command
     match &args.command {
-        SubCommand::BuildImage { iso_file, image_file  } => {
-            match build_image(&args, projects, iso_file, image_file) {
+        SubCommand::BuildImage { iso_file, image_file, block_size, block_count  } => {
+            match build_image(&args, projects, image_file, iso_file, block_size, block_count) {
                 Ok(()) => {}
                 Err(error) => {
                     error!("Unable to build Operating System image => {}", error);
@@ -136,7 +148,9 @@ fn main() {
                 }
             }
         }
-        SubCommand::RunQEMU { iso_file, debugging, debug_port } => {
+        _ => {
+            error!("Selected feature is not implemented currently");
+            exit(0);
         }
     }
 }

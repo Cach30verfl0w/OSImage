@@ -18,7 +18,10 @@ pub enum Error {
     IOError(#[from] std::io::Error),
     #[error("Executable '{0}' not found in PATH variable")]
     ExecutableNotFound(String),
-
     #[error("Build of project '{0}' failed with error code {1}")]
-    BuildFailed(String, i32)
+    BuildFailed(String, i32),
+    #[error("Illegal parameter '{0}'")]
+    InvalidParameter(String),
+    #[error("xorriso failed with error code {0}")]
+    ISOGenFailed(i32),
 }

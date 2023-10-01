@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::path::{absolute, Path, PathBuf};
 use std::time::SystemTime;
 use cargo_toml::Manifest;
@@ -19,6 +20,18 @@ pub enum ProjectKind {
     Executable
 }
 
+impl Display for ProjectKind {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "{}", match self {
+            ProjectKind::Kernel => "Kernel",
+            ProjectKind::Bootloader => "Bootloader",
+            ProjectKind::SharedLibrary => "Shared Library",
+            ProjectKind::StaticLibrary => "Static Library",
+            ProjectKind::Executable => "Executable"
+        })
+    }
+}
+
 impl ProjectKind {
     pub fn target(&self, architecture: Architecture) -> Option<String> {
         match self {
@@ -29,6 +42,33 @@ impl ProjectKind {
             ProjectKind::Executable => None
         }
     }
+
+    pub fn output_file_path(&self, architecture: Architecture, project: &str) -> Option<String> {
+        // TODO: All non-kernel and non-bootloader projects are ignored by the build system
+        match self {
+            ProjectKind::Kernel => Some(format!("target/{}-unknown-none/debug/{}", String::from(architecture), project)),
+            ProjectKind::Bootloader => Some(format!("target/{}-unknown-uefi/debug/{}.efi", String::from(architecture), project)),
+            ProjectKind::SharedLibrary => None,
+            ProjectKind::StaticLibrary => None,
+            ProjectKind::Executable => None
+        }
+    }
+
+    pub fn image_target_file<'a>(&self, architecture: Architecture, _project: &str) -> Option<&'a str> {
+        // TODO: All non-kernel and non-bootloader projects are ignored by the build system
+        match self {
+            ProjectKind::Kernel => Some("EFI/BOOT/KERNEL.ELF"),
+            ProjectKind::Bootloader => Some(if architecture.is64bit() {
+                "EFI/BOOT/BOOTX64.EFI"
+            } else {
+                "ELF/BOOT/BOOTIA32.EFI"
+            }),
+            ProjectKind::SharedLibrary => None,
+            ProjectKind::StaticLibrary => None,
+            ProjectKind::Executable => None,
+        }
+    }
+
 }
 
 #[derive(Clone)]
