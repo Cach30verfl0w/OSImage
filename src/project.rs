@@ -54,15 +54,11 @@ impl ProjectKind {
         }
     }
 
-    pub fn image_target_file<'a>(&self, architecture: Architecture, _project: &str) -> Option<&'a str> {
+    pub fn image_target_file(&self, architecture: Architecture, _project: &str) -> Option<String> {
         // TODO: All non-kernel and non-bootloader projects are ignored by the build system
         match self {
-            ProjectKind::Kernel => Some("EFI/BOOT/KERNEL.ELF"),
-            ProjectKind::Bootloader => Some(if architecture.is64bit() {
-                "EFI/BOOT/BOOTX64.EFI"
-            } else {
-                "ELF/BOOT/BOOTIA32.EFI"
-            }),
+            ProjectKind::Kernel => Some(String::from("EFI/BOOT/KERNEL.ELF")),
+            ProjectKind::Bootloader => Some(architecture.efi_boot_file()),
             ProjectKind::SharedLibrary => None,
             ProjectKind::StaticLibrary => None,
             ProjectKind::Executable => None,

@@ -27,8 +27,6 @@ pub(crate) fn build_image(args: &Arguments, projects: Vec<CargoProject>, image_f
 
     for project in projects.clone() {
         let project_name = project.manifest.package().name();
-        info!("Run build task on {} ({}) with `{}`", project_name.color(Color::Green),
-            project.kind.to_string().color(Color::Orange3), "cargo build".color(Color::Red));
 
         // Execute `cargo build`
         let mut command = Command::new(&cargo_path);
@@ -39,9 +37,14 @@ pub(crate) fn build_image(args: &Arguments, projects: Vec<CargoProject>, image_f
 
         if let Some(target) = project.kind.target(args.target_arch) {
             command
-                .arg("--target").arg(target)
+                .arg("--target").arg(&target)
                 .arg("-Zbuild-std=core,alloc,compiler_builtins")
                 .arg("-Zbuild-std-features=compiler-builtins-mem");
+            info!("Run build task on {} ({}) with `{}` ({})", project_name.color(Color::Green),
+            project.kind.to_string().color(Color::Orange3), "cargo build".color(Color::Red), target.color(Color::Green));
+        } else {
+            info!("Run build task on {} ({}) with `{}`", project_name.color(Color::Green),
+            project.kind.to_string().color(Color::Orange3), "cargo build".color(Color::Red));
         }
 
         // Validate exit code

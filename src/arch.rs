@@ -15,6 +15,8 @@ pub(crate) enum Architecture {
     X86,
     ARM,
     ARM64,
+    RISCV32,
+    RISCV64
 }
 
 impl<'a> From<&'a Architecture> for String {
@@ -30,7 +32,9 @@ impl From<Architecture> for String {
             Architecture::X86_64 => "x86_64",
             Architecture::X86 => "x86",
             Architecture::ARM => "arm",
-            Architecture::ARM64 => "arm64",
+            Architecture::ARM64 => "aarch64",
+            Architecture::RISCV32 => "riscv32",
+            Architecture::RISCV64 => "riscv64"
         }.to_string()
     }
 }
@@ -47,7 +51,9 @@ impl Architecture {
             "x86" => Self::X86,
             "x86_64" => Self::X86_64,
             "arm" => Self::ARM,
-            "arm64" => Self::ARM64,
+            "aarch64" => Self::ARM64,
+            "riscv32" => Self::RISCV32,
+            "riscv64" => Self::RISCV64,
             arch => {
                 error!("Unable to get system architecture => Unsupported architecture {}", arch);
                 exit(-1);
@@ -58,8 +64,19 @@ impl Architecture {
     #[inline]
     pub(crate) fn is64bit(&self) -> bool {
         match self {
-            Architecture::X86_64 | Architecture::ARM64 => true,
-            Architecture::X86 | Architecture::ARM => false,
+            Architecture::X86_64 | Architecture::ARM64 | Architecture::RISCV64 => true,
+            Architecture::X86 | Architecture::ARM | Architecture::RISCV32 => false,
         }
+    }
+
+    pub(crate) fn efi_boot_file(&self) -> String {
+        format!("EFI/BOOT/{}", match self {
+            Architecture::X86_64 => "BOOTX64.EFI",
+            Architecture::X86 => "BOOTIA32.EFI",
+            Architecture::ARM => "BOOTARM.EFI",
+            Architecture::ARM64 => "BOOTAA64.EFI",
+            Architecture::RISCV32 => "BOOTRISCV32.EFI",
+            Architecture::RISCV64 => "BOOTRISCV64.EFI"
+        })
     }
 }
