@@ -35,7 +35,7 @@ pub(crate) fn build_image(args: &Arguments, projects: Vec<CargoProject>, image_f
             .arg(project_name);
         command.current_dir(&args.workspace_path);
 
-        if let Some(target) = project.kind.target(args.target_arch) {
+        if let Some(target) = project.kind.target(&project, args.target_arch) {
             command
                 .arg("--target").arg(&target)
                 .arg("-Zbuild-std=core,alloc,compiler_builtins")
@@ -54,8 +54,8 @@ pub(crate) fn build_image(args: &Arguments, projects: Vec<CargoProject>, image_f
         }
 
         // Move file into image
-        if let Some(output_path) = project.kind.output_file_path(args.target_arch, project_name) {
-            let image_path = project.kind.image_target_file(args.target_arch, project_name).unwrap();
+        if let Some(output_path) = project.kind.output_file_path(&project, args.target_arch, project_name) {
+            let image_path = project.kind.image_target_file(&project, args.target_arch, project_name).unwrap();
             image.copy_into(Path::new(&args.workspace_path).join(output_path), image_path)?;
         }
     }
